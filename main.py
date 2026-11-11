@@ -84,20 +84,62 @@ def verificar_sistema_sfc():
     except FileNotFoundError:
         print("\n❌ O comando SFC não foi encontrado. Isso não deveria acontecer no Windows.")
 
+def reparar_imagem_sistema():
+    """Usa DISM para verificar e reparar a imagem do sistema Windows."""
+    print("\n--- Reparo da Imagem do Sistema (DISM) ---")
+    print("⚠️ Este processo requer conexão com a internet e pode levar de 10 a 30 minutos.")
+    print("⚠️ O Windows baixará arquivos de reparo. Não feche a janela.")
+    time.sleep(2)
+
+    try:
+        
+        comando = [
+            "DISM",
+            "/Online",
+            "/Cleanup-Image",
+            "/RestoreHealth"
+        ]
+        print("\nIniciando verificação e reparo...\n")
+        # Não ocultar a saída, permitir que o usuário veja o progresso
+        subprocess.run(comando, check=True)
+        print("\n✅ Reparo DISM concluído.")
+    except subprocess.CalledProcessError as e:
+        print(f"\n❌ Falha na execução do DISM. Código de erro: {e}")
+    except FileNotFoundError:
+        print("\n❌ Comando DISM não encontrado. Verifique se está no ambiente Windows.")
+
+def esvaziar_lixeira():
+    
+    print("\n--- Esvaziando a Lixeira ---")
+    print("⚠️ Isso apagará permanentemente todos os itens na lixeira.")
+
+    try:
+
+        comando = ["powershell", "-Command", "Clear-RecycleBin -Force -ErrorAction SilentlyContinue"]
+        
+        print("Esvaziando...")
+        subprocess.run(comando, check=True)
+        print("✅ Lixeira esvaziada com sucesso!")
+        
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Erro ao tentar esvaziar a lixeira: {e}")
+
 def exibir_menu():
-    """Função que desenha o menu na tela."""
+
     print("\n" + "="*35)
     print("         Otimize seu pc com Link Ocean")
     print("="*35)
     print("1. Limpar arquivos temporários")
     print("2. Resetar driver de vídeo")
     print("3. Verificar e Reparar Sistema (SFC)")
+    print("4. Reparo da Imagem do Sistema (DISM)")
+    print("5. Esvaziar Lixeira")
     print("0. Sair")
     print("="*35)
 
 # --- INÍCIO DO PROGRAMA ---
 def main():
-    # Checa admin logo na inicialização e avisa o usuário
+
     if not is_admin():
         print("\n⚠️ AVISO: Você não está rodando como Administrador.")
         print("Algumas funções (como o reset de vídeo) podem falhar.")
@@ -116,7 +158,7 @@ def main():
         elif opcao == '2':
             if not is_admin():
                 print("❌ Você precisa abrir o VS Code como Administrador para usar esta função.")
-                continue # Volta para o início do menu
+                continue 
                 
             confirmacao = input("A tela vai piscar. Continuar? (s/n): ")
             if confirmacao.lower() == 's':
@@ -135,12 +177,31 @@ def main():
             else:
                 print("Operação cancelada.")
 
+        elif opcao == '4':
+            if not is_admin():
+                print("❌ Você precisa abrir o VS Code como Administrador para usar esta função.")
+                continue
+                
+            confirmacao = input("Isso vai demorar. Continuar? (s/n): ")
+            if confirmacao.lower() == 's':
+                reparar_imagem_sistema()
+            else:
+                print("Operação cancelada.")
+        elif opcao == '5':
+            
+            confirmacao = input("Isso apagará TODOS os itens da lixeira. Continuar? (s/n): ")
+            if confirmacao.lower() == 's':
+                esvaziar_lixeira()
+            else:
+                print("Operação cancelada.")
+
         elif opcao == '0':
             print("Saindo do Programa... Até logo!")
             break
             
         else:
             print("❌ Opção inválida. Tente novamente.")
+
 
 if __name__ == "__main__":
     main()
